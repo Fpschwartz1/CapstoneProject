@@ -66,7 +66,7 @@ img {
 
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<p>This report is a requirement of the final phase of the Data Science Specialization course. The main goal is to display that the tasks performed until the present are on track to create a prediction algorithm based on Natural Language Processing (a field of computer science, artificial intelligence, and linguistics concerned with the interactions between computers and human natural languages). This document explains only the major features of the text data and briefly summarizes the plans for creating the prediction algorithm and a Shiny application (an easy way to build interactive web applications). Since this document is intended to non-data scientist managers, the R code was hidden and is available in http….</p>
+<p>This report is a requirement of the final phase of the Data Science Specialization course. The main goal is to display that the tasks performed until the present are on track to create a prediction algorithm based on Natural Language Processing (a field of computer science, artificial intelligence, and linguistics concerned with the interactions between computers and human natural languages). This document explains only the major features of the text data and briefly summarizes the plans for creating the prediction algorithm and a Shiny application (an easy way to build interactive web applications). Since this document is intended to non-data scientist managers, the R code was hidden and is available in <a href="https://github.com/Fpschwartz1/CapstoneProject/blob/master/MilestoneReport/MIlestoneReportRubric.Rmd">my GitHub repo</a>.</p>
 </div>
 <div id="loading-the-data-in" class="section level2">
 <h2>Loading the data in</h2>
@@ -87,28 +87,28 @@ img {
 <td align="left">en_US.blogs.txt</td>
 <td align="left">200.4 Mb</td>
 <td align="right">899288</td>
-<td align="right">231.7</td>
+<td align="right">232</td>
 </tr>
 <tr class="even">
 <td align="left">news</td>
 <td align="left">en_US.news.txt</td>
 <td align="left">196.3 Mb</td>
 <td align="right">1010242</td>
-<td align="right">201.7</td>
+<td align="right">202</td>
 </tr>
 <tr class="odd">
 <td align="left">twitter</td>
 <td align="left">en_US.twitter.txt</td>
 <td align="left">159.4 Mb</td>
 <td align="right">2360148</td>
-<td align="right">68.8</td>
+<td align="right">69</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div id="sampling" class="section level2">
 <h2>Sampling</h2>
-<p>To build models, few randomly selected rows or chunks are often enough to get an accurate approximation to results that would be obtained using all the data. A representative sample can be used to infer facts about a population. The R code below gets samples from the dataset by reading in a random subset of the original data. The <strong>rbinom</strong> function was used (with prob = 0.10) to determine whether a line of text must be included or not. The summary information of the subset files with sampled data are shown for each file.</p>
+<p>To build models, few randomly selected rows or chunks are often enough to get an accurate approximation to results that would be obtained using all the data. A representative sample can be used to infer facts about a population. The R code written (<a href="https://github.com/Fpschwartz1/CapstoneProject/blob/master/MilestoneReport/MIlestoneReportRubric.Rmd">see GitHub</a>) gets samples from the dataset by reading in a random subset of the original data. The <strong>rbinom</strong> function was used (with prob = 0.10) to determine whether a line of text must be included or not. The summary information of the subset files with sampled data are shown for each file.</p>
 <table>
 <thead>
 <tr class="header">
@@ -127,7 +127,7 @@ img {
 <td align="left">blogs_subset.txt</td>
 <td align="left">20.2 Mb</td>
 <td align="right">89584</td>
-<td align="right">231.7</td>
+<td align="right">232</td>
 <td align="right">3754921</td>
 <td align="right">152193</td>
 </tr>
@@ -136,7 +136,7 @@ img {
 <td align="left">news_subset.txt</td>
 <td align="left">20 Mb</td>
 <td align="right">101647</td>
-<td align="right">201.7</td>
+<td align="right">202</td>
 <td align="right">3550252</td>
 <td align="right">139779</td>
 </tr>
@@ -145,7 +145,7 @@ img {
 <td align="left">twitter_subset.txt</td>
 <td align="left">16.4 Mb</td>
 <td align="right">236436</td>
-<td align="right">68.8</td>
+<td align="right">69</td>
 <td align="right">3051875</td>
 <td align="right">156198</td>
 </tr>
@@ -154,7 +154,7 @@ img {
 </div>
 <div id="preprocessing" class="section level2">
 <h2>Preprocessing</h2>
-<p>Input texts in their native raw format can be an issue when analyzing these with text mining (the process of deriving high-quality information from text) methods since they might contain many unimportant stopwords (like and or the) or might be formatted inconveniently. Therefore preprocessing, i.e., applying methods for cleaning up and structuring the input text for further analysis is a core component in practical text mining studies.</p>
+<p>Input texts in their native raw format can be an issue when analyzing these with text mining methods (the process of deriving high-quality information from text) since they might contain many unimportant words (usually called stopwords) or might be formatted inconveniently. Therefore preprocessing, i.e., applying methods for cleaning up and structuring the input text for further analysis, is a core component in practical text mining studies.</p>
 <p>For preprocessing data, a <em>text corpus</em> (a large and structured set of texts) was created based on the three subset files. For illustration, one sentence was chosen so that we can follow the effects of each preprocessing step.</p>
 <pre><code>## [1] &quot;\&quot;The CIA, established in 1947 by President Harry S. Truman, is an independent US Government agency responsible for providing national security intelligence to senior US policymakers.\&quot;&quot;</code></pre>
 <p>The first step consists on removing special unicode value. The quotation mark at the end of the sentence was removed.</p>
@@ -168,7 +168,7 @@ img {
 <p>The fifth step consists on removing extra blanks.</p>
 <pre><code>## [1] &quot;the cia established in by president harry s truman is an independent us government agency responsible for providing national security intelligence to senior us policymakers &quot;</code></pre>
 <p>Finally, the clean data is saved in order to be used as training data in the prediction algorithm.</p>
-<p>Obs.: As the goal of this work is to be familiar with the data, stopwords and profane words were not removed in this phase.</p>
+<p>Obs.: As the goal of this work is to be familiar with the data, stopwords and profane words were not removed in this phase. Furthermore, stopwords can be useful sometimes and should not be removed.</p>
 </div>
 <div id="tokenization" class="section level2">
 <h2>Tokenization</h2>
@@ -177,16 +177,17 @@ img {
 </div>
 <div id="interesting-findings" class="section level2">
 <h2>Interesting findings</h2>
-<p>The steps used for preprocessing were based on the article “Text Mining Infrastructure in R”. At a first approach, I performed all the suggested steps, including the stemming process and the removal of stopwords. However, this approach proved to be not so efficient when I tried to investigate the n-grams to solve Quiz 2 questions. Words like “the”, “a”, “would”, and “of” seem to be useful to predict the next word (some of these appear among the 30 most frequent in the Unigram figure). For example, looking for the trigram “would mean the” we can find out the following, where it is clear which is the most frequent next word.</p>
+<p>The steps used for preprocessing were based on the article “Text Mining Infrastructure in R”. At a first approach, I performed all the suggested steps, including the stemming process and the removal of stopwords. However, this approach proved to be not so efficient when I tried to investigate the n-grams to solve Quiz 2 questions. So I went back. Words like “the,”would“, and”of&quot; seem to be useful to predict the next word (some of these appear among the 30 most frequent in the Unigram figure). For example, when looking for the trigram “would mean the” we can find the results below, where it is clear which is the most frequent next word.</p>
 <pre><code>##                      phrase        context      word n phrase_count
 ## 1:     would mean the owner would mean the     owner 4            1
 ## 2:     would mean the world would mean the     world 4           20
 ## 3: would mean the worrldddd would mean the worrldddd 4            1</code></pre>
 <p>On the other hand, if the list returned by <strong>stopwords(“english”)</strong> is removed from the corpus, then the prediction becomes harder. Therefore, further observations are needed in order to find a balanced solution.</p>
+<p>The process for generating n-grams requires large amount of machine resources. The solution I used was to generate one by one in different R sessions, i.e., after generating the unigram, for example, I had to exit R and start it again to generate the bigram, in order to avoid OutOfMemoryError messages. The results were saved in independent files.</p>
 </div>
 <div id="plans-for-creating-a-prediction-algorithm-and-shiny-app" class="section level2">
 <h2>Plans for creating a prediction algorithm and Shiny app</h2>
-<p>For the prediction algorithm I think that it would be good to find out a threshold for removing the least frequent stopwords. This could improve the performance during the creation of ngrams and maybe increase the accuracy of prediction. It is something that I intend to test.</p>
+<p>For the prediction algorithm I think that it would be good to find out a threshold for removing the least frequent stopwords. This could improve the performance during the creation of n-grams and maybe increase the accuracy of prediction. It is something that I intend to test. Another possibility is to create n-grams which combine results with and without stopwords and see how the accuracy is affected.</p>
 <p>One of the features of the Shiny app will be the last minute substitution of profane words, solution which has been widely discussed in the forums of the Capstone Project.</p>
 </div>
 

@@ -5,7 +5,7 @@ output: html_document
 
 ## Summary
 
-This report is a requirement of the final phase of the Data Science Specialization course. The main goal is to display that the tasks performed until the present are on track to create a prediction algorithm based on Natural Language Processing (a field of computer science, artificial intelligence, and linguistics concerned with the interactions between computers and human natural languages). This document explains only the major features of the text data and briefly summarizes the plans for creating the prediction algorithm and a Shiny application (an easy way to build interactive web applications). Since this document is intended to non-data scientist managers, the R code was hidden and is available in http....
+This report is a requirement of the final phase of the Data Science Specialization course. The main goal is to display that the tasks performed until the present are on track to create a prediction algorithm based on Natural Language Processing (a field of computer science, artificial intelligence, and linguistics concerned with the interactions between computers and human natural languages). This document explains only the major features of the text data and briefly summarizes the plans for creating the prediction algorithm and a Shiny application (an easy way to build interactive web applications). Since this document is intended to non-data scientist managers, the R code was hidden and is available in [my GitHub repo](https://github.com/Fpschwartz1/CapstoneProject/blob/master/MilestoneReport/MIlestoneReportRubric.Rmd).
 
 ## Loading the data in
 
@@ -56,7 +56,7 @@ kable(dataInfo1)
 
 ## Sampling
 
-To build models, few randomly selected rows or chunks are often enough to get an accurate approximation to results that would be obtained using all the data. A representative sample can be used to infer facts about a population. The R code below gets samples from the dataset by reading in a random subset of the original data. The **rbinom** function was used (with prob = 0.10) to determine whether a line of text must be included or not. The summary information of the subset files with sampled data are shown for each file.
+To build models, few randomly selected rows or chunks are often enough to get an accurate approximation to results that would be obtained using all the data. A representative sample can be used to infer facts about a population. The R code written ([see GitHub](https://github.com/Fpschwartz1/CapstoneProject/blob/master/MilestoneReport/MIlestoneReportRubric.Rmd)) gets samples from the dataset by reading in a random subset of the original data. The **rbinom** function was used (with prob = 0.10) to determine whether a line of text must be included or not. The summary information of the subset files with sampled data are shown for each file.
 
 ```{r, echo=FALSE}
 # SAMPLING FILE LINES - sampled data is 10% of total ammount 
@@ -157,7 +157,7 @@ kable(dataInfo2)
 
 ## Preprocessing
 
-Input texts in their native raw format can be an issue when analyzing these with text mining methods (the process of deriving high-quality information from text) since they might contain many unimportant stopwords (like and or the) or might be formatted inconveniently. Therefore preprocessing, i.e., applying methods for cleaning up and structuring the input text for further analysis is a core component in practical text mining studies. 
+Input texts in their native raw format can be an issue when analyzing these with text mining methods (the process of deriving high-quality information from text) since they might contain many unimportant words (usually called stopwords) or might be formatted inconveniently. Therefore preprocessing, i.e., applying methods for cleaning up and structuring the input text for further analysis, is a core component in practical text mining studies. 
 
 For preprocessing data, a *text corpus* (a large and structured set of texts) was created based on the three subset files. For illustration, one sentence was chosen so that we can follow the effects of each preprocessing step.
 
@@ -218,7 +218,7 @@ save(mydata.corpus, file="..\\_CleanData\\SClean.RData")
 rm(list = ls())
 ```
 
-Obs.: As the goal of this work is to be familiar with the data, stopwords and profane words were not removed in this phase.
+Obs.: As the goal of this work is to be familiar with the data, stopwords and profane words were not removed in this phase. Furthermore, stopwords can be useful sometimes and should not be removed.
 
 ## Tokenization
 
@@ -276,7 +276,7 @@ rm(Pengram)
 
 ## Interesting findings
 
-The steps used for preprocessing were based on the article "Text Mining Infrastructure in R". At a first approach, I performed all the suggested steps, including the stemming process and the removal of stopwords. However, this approach proved to be not so efficient when I tried to investigate the n-grams to solve Quiz 2 questions. So I went back. Words like "the", "a", "would", and "of" seem to be useful to predict the next word (some of these appear among the 30 most frequent in the Unigram figure). For example, looking for the trigram "would mean the" we can find out the following, where it is clear which is the most frequent next word.
+The steps used for preprocessing were based on the article "Text Mining Infrastructure in R". At a first approach, I performed all the suggested steps, including the stemming process and the removal of stopwords. However, this approach proved to be not so efficient when I tried to investigate the n-grams to solve Quiz 2 questions. So I went back. Words like "the, "would", and "of" seem to be useful to predict the next word (some of these appear among the 30 most frequent in the Unigram figure). For example, when looking for the trigram "would mean the" we can find the results below, where it is clear which is the most frequent next word.
 
 ```{r, echo=FALSE}
 Tetgram[Tetgram$context == "would mean the"]
@@ -285,8 +285,10 @@ rm(Tetgram)
 
 On the other hand, if the list returned by **stopwords("english")** is removed from the corpus, then the prediction becomes harder. Therefore, further observations are needed in order to find a balanced solution. 
 
+The process for generating n-grams requires large amount of machine resources. The solution I used was to generate one by one in different R sessions, i.e., after generating the unigram, for example, I had to exit R and start it again to generate the bigram, in order to avoid OutOfMemoryError messages. The results were saved in independent files.
+
 ## Plans for creating a prediction algorithm and Shiny app
 
-For the prediction algorithm I think that it would be good to find out a threshold for removing the least frequent stopwords. This could improve the performance during the creation of ngrams and maybe increase the accuracy of prediction. It is something that I intend to test.
+For the prediction algorithm I think that it would be good to find out a threshold for removing the least frequent stopwords. This could improve the performance during the creation of n-grams and maybe increase the accuracy of prediction. It is something that I intend to test. Another possibility is to create n-grams which combine results with and without stopwords and see how the accuracy is affected.
 
 One of the features of the Shiny app will be the last minute substitution of profane words, solution which has been widely discussed in the forums of the Capstone Project.
