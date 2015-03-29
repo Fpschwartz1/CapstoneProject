@@ -1,0 +1,292 @@
+---
+title: "Milestone Report Rubric - Data Science Specialization"
+output: html_document
+---
+
+## Summary
+
+This report is a requirement of the final phase of the Data Science Specialization course. The main goal is to display that the tasks performed until the present are on track to create a prediction algorithm based on Natural Language Processing (a field of computer science, artificial intelligence, and linguistics concerned with the interactions between computers and human natural languages). This document explains only the major features of the text data and briefly summarizes the plans for creating the prediction algorithm and a Shiny application (an easy way to build interactive web applications). Since this document is intended to non-data scientist managers, the R code was hidden and is available in http....
+
+## Loading the data in
+
+The first thing to do is to load the text files and get some summary information as shown below.
+
+```{r, echo=FALSE}
+# Packages used
+suppressPackageStartupMessages(library("tm"))
+suppressPackageStartupMessages(library("RWeka"))
+suppressPackageStartupMessages(library("dplyr"))
+suppressPackageStartupMessages(library("knitr"))
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("data.table"))
+```
+
+```{r, echo=FALSE, cache=TRUE}
+# auxiliary variables
+setwd("C:\\z\\_Pesquisa\\Coursera\\TheDataScienceSpecialization\\CapstoneProject\\MilestoneReportRubric")
+path     <- "..\\__final\\en_US\\"
+fileName <- c("en_US.blogs.txt", "en_US.news.txt", "en_US.twitter.txt")
+dataSet  <- c("blogs", "news", "twitter")
+
+# reading files and assigning them to variables whose names are in dataSet
+for(i in 1:3){
+  f <- file(paste0(path, fileName[i]), "rb")
+  assign(dataSet[i], readLines(f, encoding="utf-8", skipNul=TRUE))
+  close(f)
+}
+
+# counting lines of original files
+totalLines1 <- c(length(blogs), length(news), length(twitter))
+meanStringLength1 = sapply(dataSet, function(n) round(mean(nchar(eval(parse(text=n)))), 0))
+
+# SUMMARIZING INFO OF ORIGINAL FILES
+# data frame with orignal files info
+dataInfo1 <- data.frame(
+                 data = dataSet, 
+                 file = fileName, 
+                 fileSize = sapply(fileName, 
+                                   function(n) paste(round(file.info(paste0(path,n))$size/1024^2, 1),"Mb")),      
+                 totalLines = totalLines1,
+                 averageStringLength = meanStringLength1,
+                 stringsAsFactors=FALSE,
+                 row.names=NULL)
+# showing original files info
+kable(dataInfo1)
+```
+
+## Sampling
+
+To build models, few randomly selected rows or chunks are often enough to get an accurate approximation to results that would be obtained using all the data. A representative sample can be used to infer facts about a population. The R code below gets samples from the dataset by reading in a random subset of the original data. The **rbinom** function was used (with prob = 0.10) to determine whether a line of text must be included or not. The summary information of the subset files with sampled data are shown for each file.
+
+```{r, echo=FALSE}
+# SAMPLING FILE LINES - sampled data is 10% of total ammount 
+set.seed(56723)
+sample <- sapply(totalLines1, function(n) rbinom(n, 1, 0.10))
+sample[[1]][1] <- 1
+
+# creating three new variables with the sampled lines
+for (i in 1:3){
+  n <- eval(parse(text=dataSet[i]))[as.logical(sample[[i]])]
+  assign(paste0(dataSet[i], "_subset"), n)
+
+  write.table(eval(parse(text=paste0(dataSet[i], "_subset"))), 
+              paste0("..\\_SampledData\\", dataSet[i], "_subset.txt"), row.names = FALSE)
+}
+
+# counting lines of original files
+totalLines2 <- c(length(blogs_subset), length(news_subset), length(twitter_subset))
+meanStringLength2 = sapply(dataSet, function(n) round(mean(nchar(eval(parse(text=n)))), 0))
+
+# releasing memory
+rm(blogs, news, twitter, blogs_subset, news_subset, twitter_subset, sample, f, i, n)
+
+
+# TOKENOZATION FUNCTIONS
+except_last_word <- function (phrase) {
+  words <- split_on_space (phrase)
+  paste (words [1:length (words)-1], collapse = " ")
+}
+
+split_on_space <- function (x) {
+  result <- unlist (strsplit (x, split = "[ ]+"))
+  result [nchar (result) > 0]
+}
+
+last_word <- function (phrase) {
+  words <- split_on_space (phrase)
+  words [length (words)]
+}
+
+# Function that calculates n-grams
+create_ngram <- function (corpus, n) {
+  token <- function(x) NGramTokenizer(x, Weka_control(min = n, max = n, delimiters = ' \r\n\t.,;:\\"()?!'))
+  
+  ngrams <- c()
+  for(i in 1:length(corpus)){
+    token.aux <- token(corpus[[i]])
+    token.aux <- data.table(phrase = token.aux)
+    ngrams <- rbind(ngrams, token.aux)
+  }
+  rm(token.aux)
+    
+  # remove duplicate ngrams and count the number of each
+  ngrams <- ngrams[, list (phrase_count = .N), by = phrase]
+  ngrams[, n := n]
+  
+  # extract the context and the next word for each ngram
+  ngrams [, `:=` (
+     context = except_last_word(phrase),
+     word    = last_word(phrase)
+     ), by = phrase]
+  
+  setcolorder(ngrams, c("phrase", "context", "word", "n", "phrase_count"))
+  return(ngrams)
+}
+
+# CREATING THE CORPUS WITH SUBSET FILES
+mydata.corpus <- Corpus(DirSource("..\\_SampledData\\",encoding = "utf-8"), readerControl = list(language="en_US"))
+
+# COUNTING WORDS FROM SUBSET FILES 
+nwords <- c(0, 0, 0)
+ndiffwords <- c(0, 0, 0)
+for(i in 1:3){
+  Unigram <- create_ngram(mydata.corpus[[i]], 1)  
+  nwords[i] <- sum(Unigram$phrase_count)
+  ndiffwords[i] <- nrow(Unigram)
+  rm(Unigram)
+}
+
+# SUMMARIZING INFO OF SUBSET FILES
+dataSet  <- c("blogs_subset", "news_subset", "twitter_subset")
+fileName <- as.vector(sapply(dataSet, function(x) paste0(x,".txt")))
+# getting the subset files size in number of lines
+dataInfo2 <- data.frame(
+                 data = dataSet, 
+                 file = fileName, 
+                 fileSize = sapply(fileName, 
+                                   function(n) paste(round(file.info(paste0("..\\_SampledData\\",n))$size/1024^2, 1),"Mb")),      
+                 totalLines = totalLines2,
+                 averageStringLength = meanStringLength2,
+                 numOfWords = nwords,
+                 numOfDifferentWords = ndiffwords,
+                 stringsAsFactors=FALSE,
+                 row.names=NULL)
+# showing subset files info
+kable(dataInfo2)
+```
+
+## Preprocessing
+
+Input texts in their native raw format can be an issue when analyzing these with text mining methods (the process of deriving high-quality information from text) since they might contain many unimportant stopwords (like and or the) or might be formatted inconveniently. Therefore preprocessing, i.e., applying methods for cleaning up and structuring the input text for further analysis is a core component in practical text mining studies. 
+
+For preprocessing data, a *text corpus* (a large and structured set of texts) was created based on the three subset files. For illustration, one sentence was chosen so that we can follow the effects of each preprocessing step.
+
+```{r, echo=FALSE}
+# PREPROCESSING
+line <- 188
+mydata.corpus[[1]]$content[line]
+```
+
+The first step consists on removing special unicode value. The quotation mark at the end of the sentence was removed.
+
+```{r, echo=FALSE}
+# removing special unicode value
+mydata.corpus<-tm_map(mydata.corpus,content_transformer(function(x) iconv(x, to='ASCII', sub=' ')))
+mydata.corpus[[1]]$content[line]
+```
+
+The second step consists on changing the text to lowercase.
+
+```{r, echo=FALSE}
+# Changing text to lowercase
+mydata.corpus<-tm_map(mydata.corpus,content_transformer(tolower))
+mydata.corpus[[1]]$content[line]
+```
+
+The third step consists on removing numbers.
+
+```{r, echo=FALSE}
+# Removing numbers
+mydata.corpus <- tm_map(mydata.corpus, content_transformer(removeNumbers))
+mydata.corpus[[1]]$content[line]
+```
+
+The fourth step consists on removing punctuation marks.
+
+```{r, echo=FALSE}
+# Removing punctuation marks
+mydata.corpus <- tm_map(mydata.corpus, content_transformer(removePunctuation))
+mydata.corpus[[1]]$content[line]
+```
+
+The fifth step consists on removing extra blanks.
+
+```{r, echo=FALSE}
+# Removing extra blanks
+mydata.corpus <- tm_map(mydata.corpus, content_transformer(stripWhitespace))
+mydata.corpus[[1]]$content[line]
+```
+
+Finally, the clean data is saved in order to be used as training data in the prediction algorithm.
+
+```{r, echo=FALSE}
+mydata.corpus <- tm_map(mydata.corpus, PlainTextDocument)
+# Saving clean data
+save(mydata.corpus, file="..\\_CleanData\\SClean.RData")
+
+# releasing memory
+rm(list = ls())
+```
+
+Obs.: As the goal of this work is to be familiar with the data, stopwords and profane words were not removed in this phase.
+
+## Tokenization
+
+Tokenization is the process of breaking a stream of text up into words, phrases, symbols, or other meaningful elements called tokens. The list of tokens becomes input for further processing such as parsing or text mining. The figures below show the results of tokenization from 1 to 5 grams.
+
+```{r, echo=FALSE}
+plot_ngram <- function(ngram, name){
+  ngram <- as.data.frame(ngram[order(ngram$phrase_count, decreasing=TRUE)])
+  ngram <- ngram[1:30, c("phrase", "phrase_count")]
+  ngram <- ngram[order(ngram$phrase), ]
+  qplot(data=ngram, x=phrase, y=phrase_count, geom="bar", stat="identity") + 
+        theme(axis.text.x=element_text(angle=90)) + 
+        labs(title=paste0("The 30 most frequent ", name)) + 
+        labs(x=name) + labs(y="Frequency")  
+}
+
+load(file="..\\_CleanData\\SClean.RData")
+
+#perform the calculation of each n-gram of 1-5 grams
+
+# Unigram
+#Unigram <- create_ngram(mydata.corpus, 1)
+#save(Unigram, file="..\\_CleanData\\1gram.RData")
+load(file="..\\_CleanData\\1gram.RData")
+plot_ngram(Unigram, "Unigrams")
+rm(Unigram)
+
+# Bigram
+#Bigram <- create_ngram(mydata.corpus, 2)
+#save(Bigram, file="..\\_CleanData\\2gram.RData")
+load(file="..\\_CleanData\\2gram.RData")
+plot_ngram(Bigram, "Bigrams")
+rm(Bigram)
+
+# Trigram
+#Trigram <- create_ngram(mydata.corpus, 3)
+#save(Trigram, file="..\\_CleanData\\3gram.RData")
+load(file="..\\_CleanData\\3gram.RData")
+plot_ngram(Trigram, "Trigrams")
+rm(Trigram)
+
+# Tetgram
+#Tetgram <- create_ngram(mydata.corpus, 4)
+#save(Tetgram, file="..\\_CleanData\\4gram.RData")
+load(file="..\\_CleanData\\4gram.RData")
+plot_ngram(Tetgram, "Tetragrams")
+
+# Pengram
+#Pengram <- create_ngram(mydata.corpus, 5)
+#save(Pengram, file="..\\_CleanData\\5gram.RData")
+load(file="..\\_CleanData\\5gram.RData")
+plot_ngram(Pengram, "Pentagrams")
+rm(Pengram)
+```
+
+## Interesting findings
+
+The steps used for preprocessing were based on the article "Text Mining Infrastructure in R". At a first approach, I performed all the suggested steps, including the stemming process and the removal of stopwords. However, this approach proved to be not so efficient when I tried to investigate the n-grams to solve Quiz 2 questions. So I went back. Words like "the", "a", "would", and "of" seem to be useful to predict the next word (some of these appear among the 30 most frequent in the Unigram figure). For example, looking for the trigram "would mean the" we can find out the following, where it is clear which is the most frequent next word.
+
+```{r, echo=FALSE}
+Tetgram[Tetgram$context == "would mean the"]
+rm(Tetgram)
+```
+
+On the other hand, if the list returned by **stopwords("english")** is removed from the corpus, then the prediction becomes harder. Therefore, further observations are needed in order to find a balanced solution. 
+
+## Plans for creating a prediction algorithm and Shiny app
+
+For the prediction algorithm I think that it would be good to find out a threshold for removing the least frequent stopwords. This could improve the performance during the creation of ngrams and maybe increase the accuracy of prediction. It is something that I intend to test.
+
+One of the features of the Shiny app will be the last minute substitution of profane words, solution which has been widely discussed in the forums of the Capstone Project.
