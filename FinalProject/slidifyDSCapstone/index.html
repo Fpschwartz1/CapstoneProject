@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Predicting Word</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Predicting Word">
+  <meta name="author" content="Fabiano Peruzzo Schwartz">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <aside class="gdbar">
+    <img src="assets/img/coursera2.png">
+  </aside>
+  <hgroup class="auto-fadein">
+    <h1>Predicting Word</h1>
+    <h2>Data Science Capstone - Final Project Rubric</h2>
+    <p>Fabiano Peruzzo Schwartz<br/>Data Science Specialization</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Initial Points</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Natural Language Processing (NLP) involves natural language understanding, that is, enabling computers to derive meaning from human or natural language input.</p></li>
+<li><p>NLP is currently used in a wide range of applications such as information extraction, machine translation, sentiment analysis and question answering, among others.</p></li>
+<li><p>The present work consists on developing an NLP tool for predicting the next word given a sequence of words. The main goal is to correctly predict the next word.</p></li>
+<li><p>For this task, large textual data sets obtained from blogs, twitter and news were processed in order to build a training data set able to support good predictions.</p></li>
+<li><p>This initiative was thought in collaboration with <a href="https://www.coursera.org/course/dsscapstone">Coursera / Johns Hopkins University</a> and <a href="http://swiftkey.com/en/">SwiftKey</a>.</p></li>
+</ul>
+
+<p><center>
+<img src="assets/img/logo.png" alt="logo">
+</center></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Training data set</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>The training data set was constructed from a random sample of 20% of the original size of the raw data sets.</p></li>
+<li><p>After preprocessing the text (changing to lowercase, removing special unicode values, numbers, punctuation marks, and extra blanks), an \(n\)-<b>gram model</b> was built (\(n\) = 1 to 5).</p></li>
+</ul>
+
+<table>
+  <tr>
+    <td width="45%">
+        <img src="assets/img/Rplot2.png" alt="Trigram" style="width:411px;height:379px">
+    </td>
+
+    <td width="55%">
+      <center><h3>$n$-gram model</h3></center>
+      <ul>
+          <li>An $n$-gram is a contiguous sequence of $n$ items from a given sequence of text.
+          <li>We can estimate the population probability $p_i$ of an $n$-gram from the sample frequency $r_i$.
+          <li>If $N$ is the number of distinct $n$-grams in the sample, an estimate for $p_i$ is $r_i/N$.
+          <li>However, it computes zero for any unseen $n$-gram which is quantitatively inaccurate.
+      </ul>
+    </td>
+
+  </tr>
+</table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Prediction algorithm</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>For improving \(p_i\) estimates, <a href="http://www.grsampson.net/AGtf1.html">Good-Turing</a> frequency estimation techniques were used: an estimate for the total population frequency of all unseen \(n\)-grams is taken.</p></li>
+<li><p>The prediction for the next word of a sequence was based on the Backoff \(n\)-gram algorithm: if the \(n\)-gram we need has zero counts, we approximate it by backing off to the (\(n\)-1)-gram.</p></li>
+<li><p>For performance improvement: only \(n\)-grams with counts higher than 1 were kept; a unigram index was implemented and map each token to an integer.</p></li>
+<li><p>For example, the \(3\)-gram &quot;thanks for the&quot; is represented by</p></li>
+</ul>
+
+<table>
+  <tr>
+    <th width="20%">unigram</th>
+    <th width="20%"></th>
+    <th width="20%">trigram</th>
+    <th width="20%"></th>
+    <th width="20%"></th>
+  </tr>
+  <tr>
+    <th width="20%">id</th>
+    <th width="20%">token1</th>
+    <th width="20%">token1</th>
+    <th width="20%">token2</th>
+    <th width="20%">token3</th>
+  </tr>
+  <tr>
+    <td width="20%">314647</td>
+    <td width="20%">thanks</td>
+    <td width="20%">314647</td>
+    <td width="20%">314752</td>
+    <td width="20%">314759</td>
+  </tr>
+  <tr>
+    <td width="20%">314752</td>
+    <td width="20%">for</td>
+    <td width="20%"></td>
+    <td width="20%"></td>
+    <td width="20%"></td>
+  </tr>
+  <tr>
+    <td width="20%">314759</td>
+    <td width="20%">the</td>
+    <td width="20%"></td>
+    <td width="20%"></td>
+    <td width="20%"></td>
+  </tr>
+</table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>The Shiny App</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>The <a href="http://fpschwartz1.shinyapps.io/PredicitingWord">Shiny App</a> was written so as to accept an \(n\)-gram and predicts the next word.</p></li>
+<li><p>If the algorithm predicts a bad word (profanity), it does a last minute substitution of <b>&quot;#@#%#&quot;</b> so the user doesn&#39;t see the profane word. For checking accuracy in these cases, the user can deselect the <b>Profanity filter</b> checkbox (at his/her own risk).</p></li>
+<li><p>It is also possible to see which are the other most probable words (up to twenty) predicted by the model. Just keep the checkbox <b>View other possible words</b> selected.</p></li>
+<li><p>For testing accuracy, a suggestion is to download some \(n\)-grams from the <a href="http://www.ngrams.info/">Corpus of Contemporary American English (COCA)</a>. My tests showed about 70% correct.</p></li>
+<li><p>This application is still a prototype and uses elementary techniques, but it is good enough to show the power of NLP and how we can make things better by using this branch of knowledge.</p></li>
+<li><p>My thanks to Coursera, Johns Hopkins University, and SwiftKey by the opportunity of learning about the exciting world of NLP.</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Initial Points'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Training data set'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Prediction algorithm'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='The Shiny App'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
