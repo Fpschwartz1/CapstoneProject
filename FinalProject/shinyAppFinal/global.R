@@ -1,0 +1,6 @@
+Unigram <- readRDS("./data/Unigram.rds")
+Bigram  <- readRDS("./data/Bigram.rds")
+Trigram <- readRDS("./data/Trigram.rds")
+Tetgram <- readRDS("./data/Tetgram.rds")
+Pengram <- readRDS("./data/Pengram.rds")
+profanity <- readRDS("./data/profanity.rds")
